@@ -58,7 +58,7 @@ router.get('/:id', async (req, res, next) => {
         const db = await connectToDatabase();
         const collection = db.collection("secondChanceItems");
         const id = req.params.id;
-        const secondChanceItem = await collection.find({ id: id });
+        const secondChanceItem = await collection.findOne({ id: id });
         if (!secondChanceItem) {
             return res.status(404).json({ message: "Item not found" });
         }
@@ -75,9 +75,10 @@ router.put('/:id', async(req, res,next) => {
         const collection = db.collection("secondChanceItems");
         const id = req.params.id;
         const updateItem = req.body;
-        const secondChanceItem = await collection.updateOne(
+        const secondChanceItem = await collection.findOneAndUpdate(
             { id: id },
-            { $set: updateItem }
+            { $set: updateItem },
+            { returnDocument: "after" }
         );
         if (secondChanceItem.matchedCount === 0) {
             return res.status(404).json({ message: "Item not found" });
