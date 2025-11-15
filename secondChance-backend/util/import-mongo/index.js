@@ -1,5 +1,6 @@
 require('dotenv').config()
 const MongoClient = require('mongodb').MongoClient
+const path = require('path')
 const fs = require('fs')
 
 // MongoDB connection URL with authentication options
