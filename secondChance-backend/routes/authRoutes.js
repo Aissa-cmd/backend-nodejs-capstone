@@ -1,28 +1,28 @@
-const bcryptjs = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const express = require("express");
+const bcryptjs = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const express = require('express');
 const router = express.Router();
-const { body, validationResult } = require("express-validator");
-const connectToDatabase = require("../models/db");
-const pino = require("pino");
-const dotenv = require("dotenv");
+const { body, validationResult } = require('express-validator');
+const connectToDatabase = require('../models/db');
+const pino = require('pino');
+const dotenv = require('dotenv');
 
 const logger = pino();
 
-dotenv.config();
+dotenv.config()
 const JWT_SECRET = process.env.JWT_SECRET;
 
-router.post("/register", async (req, res, next) => {
-  logger.info("/register called");
+router.post('/register', async (req, res, next) => {
+  logger.info('/register called');
   try {
     const db = await connectToDatabase();
-    const collection = db.collection("users");
+    const collection = db.collection('users');
 
     const { email, password, firstName, lastName } = req.body;
     const existingEmail = await collection.findOne({ email: email });
     if (existingEmail) {
-      logger.error("Email id already exists");
-      return res.status(400).json({ error: "Email id already exists" });
+      logger.error('Email id already exists')
+      return res.status(400).json({ error: 'Email id already exists' });
     }
 
     const salt = await bcryptjs.genSalt(10);
@@ -43,19 +43,19 @@ router.post("/register", async (req, res, next) => {
     };
 
     const authtoken = jwt.sign(payload, JWT_SECRET);
-    logger.info("User registered successfully");
+    logger.info('User registered successfully')
 
-    res.json({ authtoken, email });
+    res.json({ authtoken, email })
   } catch (e) {
-    logger.error(e);
-    return res.status(500).send("Internal server error");
+    logger.error(e)
+    return res.status(500).send('Internal server error');
   }
-});
+})
 
-router.post("/login", async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const db = await connectToDatabase();
-    const collection = db.collection("users");
+    const collection = db.collection('users');
 
     const { email } = req.body;
 
@@ -64,8 +64,8 @@ router.post("/login", async (req, res) => {
     if (theUser) {
       let result = await bcryptjs.compare(req.body.password, theUser.password);
       if (!result) {
-        logger.error("Passwords do not match");
-        return res.status(404).json({ error: "Wrong pasword" });
+        logger.error('Passwords do not match')
+        return res.status(404).json({ error: 'Wrong pasword' });
       }
 
       const userName = theUser.firstName;
@@ -77,57 +77,57 @@ router.post("/login", async (req, res) => {
         },
       };
       const authtoken = jwt.sign(payload, JWT_SECRET);
-      logger.info("User logged in successfully");
+      logger.info('User logged in successfully')
       return res.status(200).json({ authtoken, userName, userEmail });
     } else {
-      logger.error("User not found");
-      return res.status(404).json({ error: "User not found" });
+      logger.error('User not found')
+      return res.status(404).json({ error: 'User not found' });
     }
   } catch (e) {
-    logger.error(e);
-    return res.status(500).send("Internal server error");
+    logger.error(e)
+    return res.status(500).send('Internal server error');
   }
-});
+})
 
 router.put(
-  "/update",
+  '/update',
   [
-    body("firstName")
+    body('firstName')
       .optional()
       .notEmpty()
-      .withMessage("First name cannot be empty"),
-    body("lastName")
+      .withMessage('First name cannot be empty'),
+    body('lastName')
       .optional()
       .notEmpty()
-      .withMessage("Last name cannot be empty"),
-    body("password")
+      .withMessage('Last name cannot be empty'),
+    body('password')
       .optional()
       .notEmpty()
-      .withMessage("Password cannot be empty"),
+      .withMessage('Password cannot be empty'),
   ],
   async (req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      logger.error("Validation errors in update request", errors.array());
+      logger.error('Validation errors in update request', errors.array())
       return res.status(400).json({ errors: errors.array() });
     }
     try {
       const email = req.headers.email;
       if (!email) {
-        logger.error("Email not found in the request headers");
+        logger.error('Email not found in the request headers')
         return res
           .status(400)
-          .json({ error: "Email not found in the request headers" });
+          .json({ error: 'Email not found in the request headers' });
       }
 
       const db = await connectToDatabase();
-      const collection = db.collection("users");
+      const collection = db.collection('users');
 
       const existingUser = await collection.findOne({ email });
       if (!existingUser) {
-        logger.error("User not found");
-        return res.status(404).json({ error: "User not found" });
+        logger.error('User not found')
+        return res.status(404).json({ error: 'User not found' });
       }
       existingUser.firstName = req.body.name;
       existingUser.updatedAt = new Date();
@@ -135,7 +135,7 @@ router.put(
       const updatedUser = await collection.findOneAndUpdate(
         { email },
         { $set: existingUser },
-        { returnDocument: "after" },
+        { returnDocument: 'after' },
       );
 
       const payload = {
@@ -144,13 +144,13 @@ router.put(
         },
       };
       const authtoken = jwt.sign(payload, JWT_SECRET);
-      logger.info("User updated successfully");
-      res.json({ authtoken });
+      logger.info('User updated successfully')
+      res.json({ authtoken })
     } catch (error) {
-      logger.error(error);
-      return res.status(500).send("Internal Server Error");
+      logger.error(error)
+      return res.status(500).send('Internal Server Error');
     }
   },
-);
+)
 
 module.exports = router;
