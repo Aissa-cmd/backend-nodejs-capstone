@@ -1,18 +1,18 @@
-const pino = require("pino");
+const pino = require('pino')
 
-let logger;
+let logger
 
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== 'production') {
   // In non-production environments, log to the console
   logger = pino({
-    level: "debug",
+    level: 'debug',
     transport: {
-      target: "pino-pretty",
-    },
-  });
+      target: 'pino-pretty'
+    }
+  })
 } else {
   // production
-  logger = pino();
+  logger = pino()
 }
 
-module.exports = logger;
+module.exports = logger
