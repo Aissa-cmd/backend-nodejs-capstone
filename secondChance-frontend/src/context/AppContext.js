@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext } from "react";
 
 const AppContext = createContext();
 
@@ -7,7 +7,9 @@ export const AppProvider = ({ children }) => {
   const [userName, setUserName] = useState("");
 
   return (
-    <AppContext.Provider value={{ isLoggedIn, setIsLoggedIn, userName, setUserName }}>
+    <AppContext.Provider
+      value={{ isLoggedIn, setIsLoggedIn, userName, setUserName }}
+    >
       {children}
     </AppContext.Provider>
   );
